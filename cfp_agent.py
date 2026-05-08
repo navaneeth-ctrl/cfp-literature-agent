@@ -375,7 +375,8 @@ def send_email(cfps: list) -> None:
     msg.attach(MIMEText(build_html_email(cfps),  "html"))
 
     print(f"Sending digest to {recipient} …")
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+    with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
+        server.starttls()
         server.login(sender, password)
         server.sendmail(sender, recipient, msg.as_string())
     print("Email sent ✓")
