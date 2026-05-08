@@ -41,6 +41,7 @@ jobs:
         run: |
           git config user.name  "CFP Bot"
           git config user.email "cfp-bot@users.noreply.github.com"
+          git pull --rebase origin main
           git add seen_cfps.json
           git diff --cached --quiet || git commit -m "chore: update seen CFPs [skip ci]"
           git push
