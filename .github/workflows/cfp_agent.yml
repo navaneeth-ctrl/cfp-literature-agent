@@ -1,0 +1,45 @@
+name: CFP Literature Agent
+
+on:
+  # Run every day at 08:00 UTC (1:30 PM IST)
+  schedule:
+    - cron: "0 8 * * *"
+
+  # Allow manual trigger from the GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  run-cfp-agent:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the repo (includes seen_cfps.json from previous runs)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 4. Run the agent
+      - name: Run CFP Literature Agent
+        env:
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+          SENDER_EMAIL:    ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        run: python cfp_agent.py
+
+      # 5. Commit updated seen_cfps.json so next run knows what was already sent
+      - name: Save seen CFPs back to repo
+        run: |
+          git config user.name  "CFP Bot"
+          git config user.email "cfp-bot@users.noreply.github.com"
+          git add seen_cfps.json
+          git diff --cached --quiet || git commit -m "chore: update seen CFPs [skip ci]"
+          git push
